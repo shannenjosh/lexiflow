@@ -1,4 +1,1 @@
-fastapi
-uvicorn
-google-generativeai==0.7.2
-pydantic
+google-generativeai>=0.3.0

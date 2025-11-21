@@ -1,456 +1,82 @@
-# Updated Frontend for VerifyEye with Vercel API Integration
-# Save this as: public/index.html
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VerifyEye - AI Text Detection</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 800px;
-            width: 100%;
-            padding: 40px;
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 2.5em;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-        }
-
-        .input-section {
-            margin-bottom: 30px;
-        }
-
-        textarea {
-            width: 100%;
-            min-height: 200px;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            font-family: inherit;
-            resize: vertical;
-            transition: border-color 0.3s;
-        }
-
-        textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .results {
-            display: none;
-            margin-top: 30px;
-            padding: 30px;
-            background: #f8f9fa;
-            border-radius: 15px;
-        }
-
-        .results.show {
-            display: block;
-            animation: slideIn 0.5s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .result-header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        .verdict {
-            font-size: 2em;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .verdict.ai {
-            color: #e74c3c;
-        }
-
-        .verdict.human {
-            color: #27ae60;
-        }
-
-        .confidence {
-            font-size: 1.2em;
-            color: #666;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin: 25px 0;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .stat-label {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 5px;
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .indicators {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-        }
-
-        .indicators h3 {
-            margin-bottom: 15px;
-            color: #333;
-        }
-
-        .indicator-list {
-            list-style: none;
-        }
-
-        .indicator-list li {
-            padding: 10px;
-            margin-bottom: 8px;
-            background: #f8f9fa;
-            border-left: 4px solid #667eea;
-            border-radius: 5px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            display: none;
-        }
-
-        .loading.show {
-            display: block;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .error {
-            background: #fff5f5;
-            color: #e74c3c;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            border-left: 4px solid #e74c3c;
-            display: none;
-        }
-
-        .error.show {
-            display: block;
-        }
-
-        .success-message {
-            background: #f0fdf4;
-            color: #27ae60;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            border-left: 4px solid #27ae60;
-            display: none;
-        }
-
-        .success-message.show {
-            display: block;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-            }
-
-            h1 {
-                font-size: 1.8em;
-            }
-
-            .stat-card {
-                padding: 15px;
-            }
-
-            .stat-value {
-                font-size: 18px;
-            }
-        }
-    </style>
+    <title>AI Text Tools - Powered by Gemini</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>🔍 VerifyEye</h1>
-        <p class="subtitle">AI Text Detection Powered by Google Gemini</p>
-
-        <div class="input-section">
-            <textarea 
-                id="textInput" 
-                placeholder="Paste the text you want to analyze here... (minimum 10 characters)"
-            ></textarea>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🤖 AI Text Tools</div>
+            <ul class="nav-links">
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="detect.html">Detect</a></li>
+                <li><a href="summarize.html">Summarize</a></li>
+                <li><a href="generate.html">Generate</a></li>
+            </ul>
         </div>
+    </nav>
 
-        <button class="btn" id="analyzeBtn">🔍 Analyze Text</button>
+    <main>
+        <div class="tool-container" style="text-align: center;">
+            <h1>🤖 AI Text Tools</h1>
+            <p style="font-size: 1.2rem; margin-bottom: 3rem; color: #666;">
+                Powered by Google Gemini API
+            </p>
 
-        <div class="error" id="error"></div>
-        <div class="success-message" id="success"></div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 3rem;">
+                <!-- Detect Card -->
+                <div style="background: #f8f9fa; padding: 2rem; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: transform 0.3s;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
+                    <h2 style="color: #333; margin-bottom: 1rem;">AI Detection</h2>
+                    <p style="color: #666; margin-bottom: 1.5rem;">
+                        Detect if text was generated by AI or written by a human. Analyze writing patterns and get detailed insights.
+                    </p>
+                    <a href="detect.html" class="btn" style="text-decoration: none; display: inline-block; width: auto; padding: 0.75rem 2rem;">
+                        Try Detection
+                    </a>
+                </div>
 
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>Analyzing text with AI... Please wait.</p>
+                <!-- Summarize Card -->
+                <div style="background: #f8f9fa; padding: 2rem; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: transform 0.3s;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
+                    <h2 style="color: #333; margin-bottom: 1rem;">Text Summarization</h2>
+                    <p style="color: #666; margin-bottom: 1.5rem;">
+                        Summarize long texts into concise summaries. Choose your preferred length and format (paragraph or bullet points).
+                    </p>
+                    <a href="summarize.html" class="btn" style="text-decoration: none; display: inline-block; width: auto; padding: 0.75rem 2rem;">
+                        Try Summarization
+                    </a>
+                </div>
+
+                <!-- Generate Card -->
+                <div style="background: #f8f9fa; padding: 2rem; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: transform 0.3s;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">✨</div>
+                    <h2 style="color: #333; margin-bottom: 1rem;">Text Generation</h2>
+                    <p style="color: #666; margin-bottom: 1.5rem;">
+                        Generate creative content from prompts. Customize tone, length, and creativity level to match your needs.
+                    </p>
+                    <a href="generate.html" class="btn" style="text-decoration: none; display: inline-block; width: auto; padding: 0.75rem 2rem;">
+                        Try Generation
+                    </a>
+                </div>
+            </div>
+
+            <div style="margin-top: 3rem; padding: 2rem; background: #f8f9fa; border-radius: 15px;">
+                <h3 style="color: #333; margin-bottom: 1rem;">About</h3>
+                <p style="color: #666; line-height: 1.8;">
+                    This platform provides three powerful AI-powered text tools, all powered by Google's Gemini API. 
+                    Whether you need to detect AI-generated content, summarize long texts, or generate new content, 
+                    we've got you covered. All processing is done securely and efficiently.
+                </p>
+            </div>
         </div>
+    </main>
 
-        <div class="results" id="results">
-            <div class="result-header">
-                <div class="verdict" id="verdict"></div>
-                <div class="confidence" id="confidence"></div>
-            </div>
-
-            <div class="stats">
-                <div class="stat-card">
-                    <div class="stat-label">AI Probability</div>
-                    <div class="stat-value" id="aiProb">0%</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Human Probability</div>
-                    <div class="stat-value" id="humanProb">0%</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Word Count</div>
-                    <div class="stat-value" id="wordCount">0</div>
-                </div>
-            </div>
-
-            <div class="indicators">
-                <h3>📊 Key Indicators</h3>
-                <ul class="indicator-list" id="indicators"></ul>
-            </div>
-
-            <div class="indicators">
-                <h3>✍️ Style Analysis</h3>
-                <p id="styleAnalysis"></p>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const analyzeBtn = document.getElementById('analyzeBtn');
-        const textInput = document.getElementById('textInput');
-        const results = document.getElementById('results');
-        const loading = document.getElementById('loading');
-        const errorDiv = document.getElementById('error');
-        const successDiv = document.getElementById('success');
-
-        analyzeBtn.addEventListener('click', analyzeText);
-
-        // Allow Enter+Ctrl to submit
-        textInput.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'Enter') {
-                analyzeText();
-            }
-        });
-
-        async function analyzeText() {
-            const text = textInput.value.trim();
-
-            // Validation
-            if (!text) {
-                showError('Please enter some text to analyze');
-                return;
-            }
-
-            if (text.length < 10) {
-                showError('Please enter at least 10 characters for analysis');
-                return;
-            }
-
-            if (text.length > 5000) {
-                showError('Text is too long. Maximum 5000 characters allowed');
-                return;
-            }
-
-            // Clear previous messages
-            errorDiv.classList.remove('show');
-            successDiv.classList.remove('show');
-
-            // Show loading
-            analyzeBtn.disabled = true;
-            analyzeBtn.textContent = '⏳ Analyzing...';
-            loading.classList.add('show');
-            results.classList.remove('show');
-
-            try {
-                // Call Vercel API
-                const response = await fetch('/api/detect', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ text })
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || data.message || 'Failed to analyze text');
-                }
-
-                if (!data.success) {
-                    throw new Error('Analysis failed');
-                }
-
-                // Display results
-                displayResults(data, text);
-                showSuccess('Analysis completed successfully!');
-
-            } catch (error) {
-                console.error('Error:', error);
-                showError('Error: ' + (error.message || 'Failed to analyze text. Please try again.'));
-            } finally {
-                analyzeBtn.disabled = false;
-                analyzeBtn.textContent = '🔍 Analyze Text';
-                loading.classList.remove('show');
-            }
-        }
-
-        function displayResults(data, text) {
-            // Update verdict
-            const verdictEl = document.getElementById('verdict');
-            verdictEl.textContent = data.isAI ? '🤖 AI Generated' : '👤 Human Written';
-            verdictEl.className = `verdict ${data.isAI ? 'ai' : 'human'}`;
-
-            // Update confidence
-            document.getElementById('confidence').textContent = `Confidence: ${data.confidence}`;
-
-            // Update stats
-            document.getElementById('aiProb').textContent = `${data.aiProbability}%`;
-            document.getElementById('humanProb').textContent = `${data.humanProbability}%`;
-            document.getElementById('wordCount').textContent = data.wordCount || text.split(/\s+/).length;
-
-            // Update indicators
-            const indicatorsList = document.getElementById('indicators');
-            indicatorsList.innerHTML = '';
-            if (data.indicators && Array.isArray(data.indicators) && data.indicators.length > 0) {
-                data.indicators.forEach(indicator => {
-                    const li = document.createElement('li');
-                    li.textContent = indicator;
-                    indicatorsList.appendChild(li);
-                });
-            } else {
-                indicatorsList.innerHTML = '<li>No specific indicators detected</li>';
-            }
-
-            // Update style analysis
-            document.getElementById('styleAnalysis').textContent = 
-                data.styleAnalysis || 'No detailed analysis available';
-
-            // Show results
-            results.classList.add('show');
-        }
-
-        function showError(message) {
-            errorDiv.textContent = '❌ ' + message;
-            errorDiv.classList.add('show');
-            setTimeout(() => {
-                errorDiv.classList.remove('show');
-            }, 5000);
-        }
-
-        function showSuccess(message) {
-            successDiv.textContent = '✅ ' + message;
-            successDiv.classList.add('show');
-            setTimeout(() => {
-                successDiv.classList.remove('show');
-            }, 3000);
-        }
-
-        // Focus on textarea when page loads
-        window.addEventListener('load', () => {
-            textInput.focus();
-        });
-    </script>
+    <footer>
+        <p>&copy; 2025 AI Text Analysis Platform - Powered by Google Gemini</p>
+    </footer>
 </body>
 </html>
