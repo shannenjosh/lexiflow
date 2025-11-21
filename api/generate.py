@@ -27,14 +27,17 @@ def handler(request):
                 "body": json.dumps({})
             }
         
-        # Parse request body
-        try:
-            body = request.get_json()
-        except:
-            # Fallback: try to parse body directly
-            if hasattr(request, 'body'):
-                body = json.loads(request.body) if isinstance(request.body, str) else json.loads(request.body.decode('utf-8'))
-            else:
+        # Parse request body - Vercel Python format
+        body = {}
+        if hasattr(request, 'body'):
+            if isinstance(request.body, bytes):
+                body = json.loads(request.body.decode('utf-8'))
+            elif isinstance(request.body, str):
+                body = json.loads(request.body)
+        elif hasattr(request, 'get_json'):
+            try:
+                body = request.get_json()
+            except:
                 body = {}
         
         if not body:
@@ -130,17 +133,19 @@ Make sure the response is well-structured, coherent, and directly addresses the 
             "body": json.dumps(result)
         }
         
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
         return {
             "statusCode": 400,
             "headers": {
                 "Content-Type": "application/json",
                 "Access-Control-Allow-Origin": "*"
             },
-            "body": json.dumps({"error": "Invalid JSON format"})
+            "body": json.dumps({"error": f"Invalid JSON format: {str(e)}"})
         }
     except Exception as e:
         print(f"❌ Error: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
         return {
             "statusCode": 500,
             "headers": {
