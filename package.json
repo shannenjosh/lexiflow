@@ -1,0 +1,26 @@
+{
+  "name": "verifyeye",
+  "version": "1.0.0",
+  "description": "AI Text Detection Tool - Detect if text is AI-generated using Google Gemini API",
+  "type": "module",
+  "scripts": {
+    "start": "echo 'VerifyEye - AI Text Detection'",
+    "dev": "vercel dev",
+    "build": "echo 'Build complete'"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.17.1"
+  },
+  "keywords": [
+    "ai",
+    "detection",
+    "text-analysis",
+    "gemini",
+    "vercel"
+  ],
+  "author": "shannenjosh",
+  "license": "MIT",
+  "engines": {
+    "node": "22.x"
+  }
+}
