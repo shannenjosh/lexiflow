@@ -14,8 +14,13 @@ genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 def handler(request):
     """Vercel serverless function handler"""
     try:
+        # Get HTTP method
+        method = getattr(request, 'method', 'GET')
+        if hasattr(request, 'httpMethod'):
+            method = request.httpMethod
+        
         # Handle CORS preflight
-        if request.method == 'OPTIONS':
+        if method == 'OPTIONS':
             return {
                 "statusCode": 200,
                 "headers": {
@@ -27,18 +32,30 @@ def handler(request):
                 "body": json.dumps({})
             }
         
-        # Parse request body - Vercel Python format
+        # Parse request body - Vercel Python 3.12 format
         body = {}
-        if hasattr(request, 'body'):
-            if isinstance(request.body, bytes):
-                body = json.loads(request.body.decode('utf-8'))
-            elif isinstance(request.body, str):
-                body = json.loads(request.body)
-        elif hasattr(request, 'get_json'):
-            try:
-                body = request.get_json()
-            except:
-                body = {}
+        try:
+            # Try to get body from request
+            if hasattr(request, 'body'):
+                request_body = request.body
+                if isinstance(request_body, bytes):
+                    if request_body:
+                        body = json.loads(request_body.decode('utf-8'))
+                elif isinstance(request_body, str):
+                    if request_body:
+                        body = json.loads(request_body)
+            # Alternative: check for json attribute
+            elif hasattr(request, 'json'):
+                body = request.json if request.json else {}
+            # Alternative: check for get_json method
+            elif hasattr(request, 'get_json'):
+                try:
+                    body = request.get_json() or {}
+                except:
+                    body = {}
+        except (json.JSONDecodeError, AttributeError) as e:
+            print(f"Warning: Could not parse request body: {e}")
+            body = {}
         
         if not body:
             return {
