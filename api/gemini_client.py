@@ -8,7 +8,7 @@ from google import generativeai as genai
 
 DEFAULT_MODEL = os.getenv("GEMINI_MODEL", "gemini-pro")
 
-api_key = os.getenv("AIzaSyAZuEShA5Go2EIAQN2_4V8lf8t6waJPEKs")
+api_key = os.getenv("GEMINI_API_KEY")
 
 if not api_key:
     raise RuntimeError(
